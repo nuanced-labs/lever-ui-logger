@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
-Minimal, zero-dependency logging library with optional EventBus integration. Designed for TypeScript-first development with built-in PII redaction and focused core transport system. Advanced features like WebSocket streaming, IndexedDB persistence, and worker processing are handled by external services that integrate via EventBus.
+Zero-dependency logging library with optional EventBus integration. Designed for TypeScript-first development with built-in PII redaction and focused core transport system. Advanced features like WebSocket streaming, IndexedDB persistence, and worker processing are handled by external services that integrate via EventBus.
 
 ## Key Benefits
 
