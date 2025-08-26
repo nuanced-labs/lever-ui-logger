@@ -1,0 +1,48 @@
+# Development files
+src/
+test/
+scripts/
+*.test.ts
+
+# Build configuration
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+eslint.config.js
+
+# Documentation and project files
+TASK_TICKETS.md
+REQUIREMENTS.md
+
+# Development dependencies
+node_modules/
+.env
+.env.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage reports
+coverage/
+.nyc_output
+
+# Temporary files
+.tmp/
+temp/

@@ -1,0 +1,100 @@
+{
+  "name": "lever-ui-logger",
+  "version": "0.1.0",
+  "description": "Zero-dependency logging library with optional EventBus integration. Built-in PII redaction, multiple transports, and comprehensive logging capabilities.",
+  "keywords": [
+    "logging",
+    "logger",
+    "zero-dependencies",
+    "sendbeacon",
+    "typescript",
+    "framework-agnostic",
+    "telemetry",
+    "pii-redaction",
+    "transport",
+    "metrics",
+    "error-handling",
+    "eventbus",
+    "privacy-first"
+  ],
+  "author": "Lever UI Team",
+  "homepage": "https://github.com/nuanced-labs/lever-ui-logger#readme",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuanced-labs/lever-ui-logger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nuanced-labs/lever-ui-logger/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./logger": {
+      "types": "./dist/logger.d.ts",
+      "import": "./dist/logger.js",
+      "require": "./dist/logger.cjs"
+    },
+    "./transports": {
+      "types": "./dist/transports.d.ts",
+      "import": "./dist/transports.js",
+      "require": "./dist/transports.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run clean && npm run typecheck && npm run lint && npm run test && npm run build:bundle && npm run build:types",
+    "build:bundle": "tsup",
+    "build:types": "tsc --project tsconfig.json --declaration --emitDeclarationOnly --outDir dist/types",
+    "clean": "rimraf dist",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "lint": "eslint 'src/**/*.ts' 'test/**/*.ts'",
+    "lint:fix": "eslint 'src/**/*.ts' 'test/**/*.ts' --fix",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
+    "size": "npm run build && bundlesize"
+  },
+  "bundlesize": [
+    {
+      "path": "dist/logger.js",
+      "maxSize": "12kb",
+      "compression": "gzip"
+    },
+    {
+      "path": "dist/transports.js",
+      "maxSize": "17kb",
+      "compression": "gzip"
+    },
+    {
+      "path": "dist/index.js",
+      "maxSize": "28kb",
+      "compression": "gzip"
+    }
+  ],
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
+    "@vitest/coverage-v8": "^2.1.9",
+    "bundlesize": "^0.18.2",
+    "eslint": "^9.34.0",
+    "jsdom": "^26.1.0",
+    "rimraf": "^6.0.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}

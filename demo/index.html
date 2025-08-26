@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lever UI Logger - Interactive Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Lever UI Logger</h1>
+            <p class="subtitle">Interactive Demo - Zero Dependencies, Full Features</p>
+        </header>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="section">
+                    <h3 class="section-title">Logger Configuration</h3>
+                    
+                    <div class="control-group">
+                        <label for="log-level">Minimum Log Level</label>
+                        <select id="log-level">
+                            <option value="trace">Trace</option>
+                            <option value="debug">Debug</option>
+                            <option value="info" selected>Info</option>
+                            <option value="warn">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="component">Component Name</label>
+                        <input type="text" id="component" value="demo-app" placeholder="Enter component name">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Features</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enable-pii" checked>
+                            <label for="enable-pii">PII Redaction</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enable-sampling">
+                            <label for="enable-sampling">Sampling (50%)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="enable-context" checked>
+                            <label for="enable-context">Context Logging</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">Log Messages</h3>
+                    
+                    <div class="control-group">
+                        <label for="message">Message</label>
+                        <input type="text" id="message" value="User action completed" placeholder="Enter log message">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="context-data">Context (JSON)</label>
+                        <textarea id="context-data" placeholder='{"userId": "12345", "action": "click"}'>{"userId": "12345", "email": "user@example.com", "action": "button_click"}</textarea>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Quick Log</label>
+                        <div class="level-buttons">
+                            <button class="btn btn-info" onclick="logMessage('trace')">Trace</button>
+                            <button class="btn btn-info" onclick="logMessage('debug')">Debug</button>
+                            <button class="btn btn-secondary" onclick="logMessage('info')">Info</button>
+                            <button class="btn btn-warning" onclick="logMessage('warn')">Warn</button>
+                            <button class="btn btn-danger" onclick="logMessage('error')">Error</button>
+                            <button class="btn btn-primary" onclick="logMetric()">Metric</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">Demo Scenarios</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="runUserJourney()">User Journey</button>
+                        <button class="btn btn-danger" onclick="simulateError()">Simulate Error</button>
+                        <button class="btn btn-info" onclick="performanceTest()">Performance Test</button>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">Statistics</h3>
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="total-logs">0</div>
+                            <div class="stat-label">Total Logs</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="errors-count">0</div>
+                            <div class="stat-label">Errors</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="metrics-count">0</div>
+                            <div class="stat-label">Metrics</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-area">
+                <div class="toolbar">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchView('console')">Console Output</button>
+                        <button class="tab-btn" onclick="switchView('raw')">Raw JSON</button>
+                        <button class="tab-btn" onclick="switchView('network')">Network</button>
+                    </div>
+                    <button class="clear-btn" onclick="clearConsole()">Clear Console</button>
+                </div>
+
+                <div class="console-output" id="console-output">
+                    <div class="log-entry log-info">
+                        <span class="timestamp">[12:00:00.000]</span>
+                        <span class="component">[demo-app]</span>
+                        <span class="message">Logger initialized - Ready for demo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the actual lever-ui-logger library from dist
+        import { createLogger, ConsoleTransport } from './dist/index.js';
+        
+        // Custom Demo Console Transport that captures logs for display
+        class DemoConsoleTransport {
+            constructor() {
+                this.name = 'demo-console';
+                this.consoleOutput = document.getElementById('console-output');
+                this.stats = {
+                    total: 0,
+                    errors: 0,
+                    metrics: 0
+                };
+                this.currentView = 'console';
+            }
+
+            write(event) {
+                // Update statistics
+                this.stats.total++;
+                if (event.level === 'error') this.stats.errors++;
+                if (event.message && event.message.startsWith('Metric:')) {
+                    this.stats.metrics++;
+                }
+                this.updateStats();
+
+                // Display in our custom console
+                this.displayLog(event);
+
+                // Also log to browser console
+                const consoleMethod = event.level === 'error' ? 'error' : 
+                                     event.level === 'warn' ? 'warn' : 
+                                     'log';
+                console[consoleMethod](`[${event.component}] ${event.message}`, event.args);
+            }
+
+            displayLog(entry) {
+                const logDiv = document.createElement('div');
+                logDiv.className = `log-entry log-${entry.level}`;
+                
+                const timestamp = new Date(entry.timestamp).toLocaleTimeString('en-US', { 
+                    hour12: false, 
+                    fractionalSecondDigits: 3 
+                });
+
+                if (this.currentView === 'console') {
+                    const contextStr = entry.context ? JSON.stringify(entry.context) : '';
+                    const argsStr = entry.args && entry.args.length > 0 ? JSON.stringify(entry.args[0]) : '';
+                    
+                    logDiv.innerHTML = `
+                        <span class="timestamp">[${timestamp}]</span>
+                        <span class="component">[${entry.component}]</span>
+                        <span class="message">${this.escapeHtml(entry.message)}</span>
+                        ${contextStr || argsStr ? `<div class="context">Context: ${this.escapeHtml(contextStr || argsStr)}</div>` : ''}
+                    `;
+                } else if (this.currentView === 'raw') {
+                    logDiv.innerHTML = `<pre>${this.escapeHtml(JSON.stringify(entry, null, 2))}</pre>`;
+                }
+                
+                this.consoleOutput.appendChild(logDiv);
+                this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            updateStats() {
+                document.getElementById('total-logs').textContent = this.stats.total;
+                document.getElementById('errors-count').textContent = this.stats.errors;
+                document.getElementById('metrics-count').textContent = this.stats.metrics;
+            }
+
+            setView(view) {
+                this.currentView = view;
+            }
+
+            async flush() {
+                // No-op for demo
+            }
+
+            async close() {
+                // No-op for demo
+            }
+        }
+
+        // Initialize demo console transport
+        const demoTransport = new DemoConsoleTransport();
+
+        // Initialize the real logger with our custom transport
+        let logger = createLogger({
+            level: 'info',
+            component: 'demo-app',
+            redaction: {
+                enabled: true,
+                mode: 'balanced'
+            },
+            transports: [
+                demoTransport,
+                new ConsoleTransport({ 
+                    colors: true,
+                    timestamp: true,
+                    format: 'pretty'
+                })
+            ]
+        });
+
+        // Make functions available globally
+        window.logger = logger;
+        window.demoTransport = demoTransport;
+
+        window.logMessage = function(level) {
+            const message = document.getElementById('message').value;
+            const contextStr = document.getElementById('context-data').value;
+            let context = {};
+            
+            try {
+                if (contextStr) {
+                    context = JSON.parse(contextStr);
+                }
+            } catch (e) {
+                logger.error('Invalid JSON in context field', { error: e.message });
+                return;
+            }
+
+            logger[level](message, context);
+        };
+
+        window.logMetric = function() {
+            logger.metric('user_interaction', {
+                action: 'button_click',
+                component: 'demo',
+                duration: Math.floor(Math.random() * 500),
+                success: true
+            });
+        };
+
+        window.clearConsole = function() {
+            const output = document.getElementById('console-output');
+            output.innerHTML = '';
+            demoTransport.stats = { total: 0, errors: 0, metrics: 0 };
+            demoTransport.updateStats();
+        };
+
+        window.switchView = function(view) {
+            demoTransport.setView(view);
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'network') {
+                logger.info('Network view shows transport activity (SendBeacon, Fetch, etc.)');
+            }
+        };
+
+        window.runUserJourney = function() {
+            logger.info('Starting user journey simulation');
+            
+            setTimeout(() => {
+                const userLogger = logger.withContext({ sessionId: 'sess_123', userId: 'user_456' });
+                userLogger.info('User logged in', { method: 'oauth', provider: 'google' });
+            }, 500);
+            
+            setTimeout(() => {
+                logger.debug('Loading user preferences');
+            }, 1000);
+            
+            setTimeout(() => {
+                logger.info('Dashboard loaded', { loadTime: 234, components: 5 });
+            }, 1500);
+            
+            setTimeout(() => {
+                logger.metric('page_performance', { 
+                    page: 'dashboard',
+                    loadTime: 234,
+                    renderTime: 145,
+                    apiCalls: 3
+                });
+            }, 2000);
+            
+            setTimeout(() => {
+                logger.info('User journey completed successfully');
+            }, 2500);
+        };
+
+        window.simulateError = function() {
+            logger.warn('Simulating error scenario');
+            
+            setTimeout(() => {
+                logger.error('Database connection failed', {
+                    error: 'ECONNREFUSED',
+                    host: 'localhost',
+                    port: 5432,
+                    retries: 3
+                });
+            }, 500);
+            
+            setTimeout(() => {
+                logger.warn('Attempting fallback to cache');
+            }, 1000);
+            
+            setTimeout(() => {
+                logger.info('Successfully served from cache', { cacheHit: true });
+            }, 1500);
+        };
+
+        window.performanceTest = function() {
+            logger.info('Starting performance test - 100 rapid logs');
+            const startTime = performance.now();
+            
+            for (let i = 0; i < 100; i++) {
+                logger.info(`Performance test log ${i + 1}`, {
+                    iteration: i,
+                    timestamp: Date.now(),
+                    data: { test: true, index: i }
+                });
+            }
+            
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            logger.metric('performance_test', {
+                totalLogs: 100,
+                duration: duration.toFixed(2),
+                logsPerSecond: Math.round(100 / (duration / 1000))
+            });
+            
+            logger.info(`Performance test completed in ${duration.toFixed(2)}ms`);
+        };
+
+        // Configuration change handlers
+        document.getElementById('log-level').addEventListener('change', (e) => {
+            logger.setLevel(e.target.value);
+            logger.info(`Log level changed to: ${e.target.value}`);
+        });
+
+        document.getElementById('component').addEventListener('change', (e) => {
+            // We need to recreate the logger with new component name
+            const newConfig = {
+                level: logger.level,
+                component: e.target.value,
+                redaction: {
+                    enabled: document.getElementById('enable-pii').checked,
+                    mode: 'balanced'
+                },
+                sampling: document.getElementById('enable-sampling').checked ? {
+                    trace: 0.1,
+                    debug: 0.5,
+                    info: 0.5,
+                    warn: 1.0,
+                    error: 1.0
+                } : {},
+                transports: [
+                    demoTransport,
+                    new ConsoleTransport({ 
+                        colors: true,
+                        timestamp: true,
+                        format: 'pretty'
+                    })
+                ]
+            };
+            
+            logger = createLogger(newConfig);
+            window.logger = logger;
+            logger.info(`Component name changed to: ${e.target.value}`);
+        });
+
+        document.getElementById('enable-pii').addEventListener('change', (e) => {
+            // Recreate logger with new redaction settings
+            const newConfig = {
+                level: logger.level,
+                component: document.getElementById('component').value,
+                redaction: {
+                    enabled: e.target.checked,
+                    mode: 'balanced'
+                },
+                sampling: document.getElementById('enable-sampling').checked ? {
+                    trace: 0.1,
+                    debug: 0.5,
+                    info: 0.5,
+                    warn: 1.0,
+                    error: 1.0
+                } : {},
+                transports: [
+                    demoTransport,
+                    new ConsoleTransport({ 
+                        colors: true,
+                        timestamp: true,
+                        format: 'pretty'
+                    })
+                ]
+            };
+            
+            logger = createLogger(newConfig);
+            window.logger = logger;
+            logger.info(`PII Redaction ${e.target.checked ? 'enabled' : 'disabled'}`);
+        });
+
+        document.getElementById('enable-sampling').addEventListener('change', (e) => {
+            // Recreate logger with new sampling settings
+            const newConfig = {
+                level: logger.level,
+                component: document.getElementById('component').value,
+                redaction: {
+                    enabled: document.getElementById('enable-pii').checked,
+                    mode: 'balanced'
+                },
+                sampling: e.target.checked ? {
+                    trace: 0.1,
+                    debug: 0.5,
+                    info: 0.5,
+                    warn: 1.0,
+                    error: 1.0
+                } : {},
+                transports: [
+                    demoTransport,
+                    new ConsoleTransport({ 
+                        colors: true,
+                        timestamp: true,
+                        format: 'pretty'
+                    })
+                ]
+            };
+            
+            logger = createLogger(newConfig);
+            window.logger = logger;
+            logger.info(e.target.checked ? 
+                'Sampling enabled (50% for info/debug, 10% for trace)' : 
+                'Sampling disabled'
+            );
+        });
+
+        document.getElementById('enable-context').addEventListener('change', (e) => {
+            // This is handled by the logger itself
+            logger.info(`Context logging ${e.target.checked ? 'enabled' : 'disabled'}`);
+        });
+
+        // Initial log
+        logger.info('Demo application initialized', {
+            version: '1.0.0',
+            features: ['PII Redaction', 'Sampling', 'Metrics', 'Context'],
+            browser: navigator.userAgent
+        });
+    </script>
+</body>
+</html>
