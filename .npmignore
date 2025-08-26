@@ -4,6 +4,8 @@ test/
 scripts/
 *.test.ts
 
+demo/
+
 # Build configuration
 tsconfig.json
 tsup.config.ts
@@ -13,6 +15,8 @@ eslint.config.js
 # Documentation and project files
 TASK_TICKETS.md
 REQUIREMENTS.md
+docs/
+examples/
 
 # Development dependencies
 node_modules/
