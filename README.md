@@ -34,9 +34,6 @@ Zero-dependency logging library with optional EventBus integration. Designed for
 # Core logger
 npm install lever-ui-logger
 
-# Standalone (zero dependencies)
-npm install lever-ui-logger
-
 # With optional EventBus integration (install EventBus separately)
 npm install lever-ui-logger lever-ui-eventbus
 ```
