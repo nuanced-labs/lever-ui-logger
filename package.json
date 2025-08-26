@@ -1,6 +1,6 @@
 {
   "name": "lever-ui-logger",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Zero-dependency logging library with optional EventBus integration. Built-in PII redaction, multiple transports, and comprehensive logging capabilities.",
   "keywords": [
     "logging",

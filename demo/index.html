@@ -127,8 +127,8 @@
     </div>
 
     <script type="module">
-        // Import the actual lever-ui-logger library from dist
-        import { createLogger, ConsoleTransport } from './dist/index.js';
+        // Import the actual lever-ui-logger library from unpkg CDN
+        import { createLogger, ConsoleTransport } from 'https://unpkg.com/lever-ui-logger@latest/dist/index.js';
         
         // Custom Demo Console Transport that captures logs for display
         class DemoConsoleTransport {

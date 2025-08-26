@@ -31,14 +31,9 @@ A clean, modern interactive demonstration of the lever-ui-logger library feature
 
 ### Running the Demo
 
-1. Open `index.html` in a modern web browser
-2. Or serve it locally:
-   ```bash
-   # Using Python
-   python -m http.server 8000
-   
-   # Using Node.js
-   npx http-server
+  Using Node.js
+  ```
+   npx http-server demo
    ```
 
 ### Interactive Controls
